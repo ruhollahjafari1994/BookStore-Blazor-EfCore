@@ -1,16 +1,14 @@
-﻿@page "/AuthorsList"    
+﻿@page "/AuthorsList"
 @using Acme.BookStore.Books;
 @using Blazorise
-@using Blazorise.DataGrid        
+@using Blazorise.DataGrid
 @using Acme.BookStore.Authors
-@using Acme.BookStore.Localization
 @using Volo.Abp.Application.Dtos;
-@using Volo.Abp.AspNetCore.Components.Web
 @inherits BookStoreComponentBase
 @inject IAuthorAppService AuthorAppService
-@inject AbpBlazorMessageLocalizerHelper<BookStoreResource> LH
 @using System.Reflection;
- 
+
+
 
 <div class="container my-5">
     <div class="row mb-3">
@@ -22,21 +20,19 @@
                 <input class="form-control" name="Search" @oninput="Search" placeholder="Search" />
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Advanced Search:</span>
-                </div>
-                <input class="form-control" name="Search" @oninput="AdvancedSearch" placeholder="Search with Name or ID" />
-            </div>
-        </div>
+
     </div>
     <div class="row">
         <div class="col-md-12">
-            <DataGrid TItem="AuthorDto" Data="@filteredData.Items">
+            <DataGrid TItem="AuthorDto" Data="@filteredData.Items" Sortable="true">
                 @foreach (PropertyInfo property in typeof(AuthorDto).GetProperties())
                 {
-                    <DataGridColumn TItem="AuthorDto" Field="@property.Name" Caption="@property.Name" />
+                    <DataGridColumn TItem="AuthorDto"
+                                Field="@property.Name"
+                                Caption="@property.Name"
+                                @onclick="() => Sorting(property.Name)"
+                                Sortable="true">
+                    </DataGridColumn>
                 }
             </DataGrid>
 
@@ -81,10 +77,16 @@
     private PagedResultDto<AuthorDto> authorList = new PagedResultDto<AuthorDto>();
     private int pageItems = 0;
     private int itemsPerPage = 10;
+    private string sorting = "Id";
 
     protected override async Task OnInitializedAsync()
     {
-      var  input=new GetAuthorListDto{MaxResultCount=itemsPerPage,SkipCount=pageItems} ;
+        var input = new GetAuthorListDto
+            {
+                MaxResultCount = itemsPerPage,
+                SkipCount = pageItems,
+                Sorting = sorting
+            };
         authorList = await AuthorAppService.GetListAsync(input);
         filteredData = authorList;
         pageItems = (int)System.Math.Ceiling((decimal)filteredData.Items.Count / 10);
@@ -102,25 +104,8 @@
         {
             filteredData = authorList;
         }
-        currentPage = "1";  
-        pageItems = (int)Math.Ceiling((decimal)filteredData.Items.Count / 10);  
-    }
-    private  void AdvancedSearch(ChangeEventArgs e)
-    {
-        string query = e.Value.ToString();
-        if (query.Length >= 3)
-        {
-            filteredData.Items = authorList.Items.Where(
-                x => x.Name.ToLower().Contains(query.ToLower()) || x.Id.ToString().Contains(query)
-            ).ToList();
-
-        }
-        else
-        {
-            filteredData = authorList;
-        }
-        currentPage = "1"; // reset the current page to the first page after search
-        pageItems = (int)Math.Ceiling((decimal)filteredData.Items.Count / 10); // update the number of pages
+        currentPage = "1";
+        pageItems = (int)Math.Ceiling((decimal)filteredData.Items.Count / 10);
     }
     private bool IsActive(string page)
         => currentPage == page;
@@ -160,5 +145,14 @@
         var currentPageAsInt = int.Parse(page);
         currentPage = page;
         filteredData.Items = authorList.Items.Skip((currentPageAsInt - 1) * 10).Take(10).ToList();
-    }      
+    }
+
+
+    private static string Sorting(string sorting)
+    {
+        Console.WriteLine(sorting);
+        return sorting;
+    }
+
+
 } 
