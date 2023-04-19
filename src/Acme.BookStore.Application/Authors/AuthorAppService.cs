@@ -40,24 +40,8 @@ public class AuthorAppService : BookStoreAppService, IAuthorAppService
             input.Sorting = nameof(Author.Name);
         }
         var queryable = await _authorRepository.GetQueryableAsync();
-        var query = from author in queryable    
-                    select new { author };
-        switch (input.Sorting)
-        {
-            case "Id": 
-                query = query.OrderBy(x=>x.author.Id).Skip(input.SkipCount).Take(input.MaxResultCount);
-                break;
-            case "Name":
-                query = query.OrderBy(x => x.author.Name).Skip(input.SkipCount).Take(input.MaxResultCount);
-                break;
-            case "BirthDate":
-                query = query.OrderBy(x => x.author.BirthDate).Skip(input.SkipCount).Take(input.MaxResultCount);
-                break;
-            case "ShortBio":
-                query = query.OrderBy(x => x.author.ShortBio).Skip(input.SkipCount).Take(input.MaxResultCount);
-                break;   
-        }
-       
+        var query = from author in queryable select new { author };
+        query = query.Skip(input.SkipCount).Take(input.MaxResultCount);
         var queryResult = await AsyncExecuter.ToListAsync(query);
 
         var authorDtos = queryResult.Select(x =>
@@ -108,5 +92,4 @@ public class AuthorAppService : BookStoreAppService, IAuthorAppService
     {
         await _authorRepository.DeleteAsync(id);
     }
-
 }
