@@ -1,0 +1,159 @@
+﻿@page "/test"
+@using Blazorise
+@using Blazorise.DataGrid
+
+
+@attribute [Authorize(BookStorePermissions.Books.Default)]
+@using Acme.BookStore.Permissions
+@using Microsoft.AspNetCore.Authorization
+@using Volo.Abp.Application.Dtos
+@using Acme.BookStore.Books
+@using Acme.BookStore.Localization
+@using Microsoft.Extensions.Localization
+@using Volo.Abp
+@using Volo.Abp.AspNetCore.Components.Web
+@inject IStringLocalizer<BookStoreResource> L
+@inject AbpBlazorMessageLocalizerHelper<BookStoreResource> LH
+@inherits AbpCrudPageBase<IBookAppService, BookDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateBookDto>
+
+ 
+<div class="container">
+    <input class="form-control" name="Search" @oninput="Search" placeholder="Search" />
+    <DataGrid TItem="Person" Data="@filteredPersons">
+        <DataGridColumn TItem="Person" Field="@nameof(Person.Name)" Caption="Name" />
+        <DataGridColumn TItem="Person" Field="@nameof(Person.Age)" Caption="Age" />
+    </DataGrid>
+    <Pagination>
+        <PaginationItem Disabled="@IsPageNavigationDisabled(PREVIOUS)" @onclick="Previous">
+            <PaginationLink>
+                <span aria-hidden="true">«</span>
+            </PaginationLink>
+        </PaginationItem>
+        @{
+            for (var i = 1; i <= pageItems; i++)
+            {
+                var pageNumberAsString = i.ToString();
+                <PaginationItem @key="pageNumberAsString" Active="@IsActive(pageNumberAsString)">
+                    <PaginationLink Page="@pageNumberAsString" Clicked="SetActive">
+                        @pageNumberAsString
+                    </PaginationLink>
+                </PaginationItem>
+            }
+        }
+        <PaginationItem Disabled="@IsPageNavigationDisabled(NEXT)" @onclick="Next">
+            <PaginationLink>
+                <span aria-hidden="true">»</span>
+            </PaginationLink>
+        </PaginationItem>
+    </Pagination>
+
+</div>
+
+@code {
+    private const string PREVIOUS = "previous";
+    private const string NEXT = "next";
+    private string currentPage = "1";
+
+    private List<Person> people = new List<Person>
+    {
+        new Person { Name = "John", Age = 25 },
+        new Person { Name = "Jane", Age = 30 },
+        new Person { Name = "Bob1", Age = 40 },
+        new Person { Name = "Alex", Age = 40 },
+        new Person { Name = "dsad", Age = 40 },
+        new Person { Name = "werwer", Age = 40 },
+        new Person { Name = "er34", Age = 21 },
+        new Person { Name = "efvv", Age = 22 },
+        new Person { Name = "erer", Age = 23 },
+        new Person { Name = "Bob2", Age = 24 },
+        new Person { Name = "Bob3", Age = 25 },
+        new Person { Name = "Bob4", Age = 26 },
+        new Person { Name = "Bobr", Age = 27 },
+        new Person { Name = "Bob5", Age = 28 },
+        new Person { Name = "Bob6", Age = 29 },
+        new Person { Name = "Bob7", Age = 30 },
+        new Person { Name = "Bob8", Age = 31 },
+        new Person { Name = "Bob9", Age = 32 },
+        new Person { Name = "Bob10", Age = 33 },
+        new Person { Name = "Bob11", Age = 34 },
+        new Person { Name = "Bob12", Age = 35 },
+    };
+    private List<Person> filteredPersons = new List<Person>();
+    private int pageItems = 0;
+    private int itemsPerPage = 3;
+
+    protected override async Task OnInitializedAsync()
+    {
+       var authorList = (await AppService.GetAuthorLookupAsync()).Items;
+
+        filteredPersons = people;
+        pageItems =   (int)System.Math.Ceiling((decimal)filteredPersons.Count/10);
+    }
+
+    private async Task Search(ChangeEventArgs e)
+    {
+        string query = e.Value.ToString();
+        if (query.Length >= 3)
+        {
+            filteredPersons = people.Where(x => x.Name.ToLower().Contains(query.ToLower())).ToList();
+        }
+        else
+        {
+            filteredPersons = people;
+        }
+        currentPage = "1"; // reset the current page to the first page after search
+        pageItems = (int)Math.Ceiling((decimal)filteredPersons.Count / 10); // update the number of pages
+    }
+
+    private bool IsActive(string page)
+        => currentPage == page;
+
+    private bool IsPageNavigationDisabled(string navigation)
+    {
+        if (navigation.Equals(PREVIOUS))
+        {
+            return currentPage.Equals("1");
+        }
+        else if (navigation.Equals(NEXT))
+        {
+            return currentPage.Equals(pageItems.ToString());
+        }
+        return false;
+    }
+
+    private void Previous()
+    {
+        var currentPageAsInt = int.Parse(currentPage);
+        if (currentPageAsInt > 1)
+        {
+            currentPage = (currentPageAsInt - 1).ToString();
+            filteredPersons = people.Skip((currentPageAsInt - 2) * 10).Take(10).ToList();
+        }
+    }
+
+    private void Next()
+    {
+        var currentPageAsInt = int.Parse(currentPage);
+        if (currentPageAsInt < pageItems)
+        {
+            currentPage = (currentPageAsInt + 1).ToString();
+            filteredPersons = people.Skip(currentPageAsInt * 10).Take(10).ToList();
+        }
+    }
+
+
+    private void SetActive(string page)
+    {
+        var currentPageAsInt = int.Parse(page);
+        currentPage = page;
+        filteredPersons = people.Skip((currentPageAsInt -1) * 10).Take(10).ToList();
+    }
+        
+
+    public class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+}
+

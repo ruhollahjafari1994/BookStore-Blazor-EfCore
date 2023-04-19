@@ -1,0 +1,167 @@
+﻿@page "/AuthorsList"
+
+@using Acme.BookStore.Books;
+@using Blazorise
+@using Blazorise.DataGrid
+
+
+@using Acme.BookStore.Authors
+@using Acme.BookStore.Localization
+@using Volo.Abp.Application.Dtos;
+@using Volo.Abp.AspNetCore.Components.Web
+@inherits BookStoreComponentBase
+@inject IAuthorAppService AuthorAppService
+@inject AbpBlazorMessageLocalizerHelper<BookStoreResource> LH
+
+
+<div class="container my-5">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Search:</span>
+                </div>
+                <input class="form-control" name="Search" @oninput="Search" placeholder="Search" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Advanced Search:</span>
+                </div>
+                <input class="form-control" name="Search" @oninput="AdvancedSearch" placeholder="Search with Name or ID" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <DataGrid TItem="AuthorDto" Data="@filteredData.Items">
+                <DataGridColumn TItem="AuthorDto" Field="@nameof(AuthorDto.Name)" Caption="Name" />
+                <DataGridColumn TItem="AuthorDto" Field="@nameof(AuthorDto.Id)" Caption="ID" />
+            </DataGrid>
+        </div>
+    </div>
+    <div class="row mt-3 justify-content-center">
+        <div class="col-md-6">
+            <Pagination>
+                <PaginationItem Disabled="@IsPageNavigationDisabled(PREVIOUS)" @onclick="Previous">
+                    <PaginationLink>
+                        <span aria-hidden="true">&laquo;</span>
+                    </PaginationLink>
+                </PaginationItem>
+                @{
+                    for (var i = 1; i <= pageItems; i++)
+                    {
+                        var pageNumberAsString = i.ToString();
+                        <PaginationItem @key="pageNumberAsString" Active="@IsActive(pageNumberAsString)">
+                            <PaginationLink Page="@pageNumberAsString" Clicked="SetActive">
+                                @pageNumberAsString
+                            </PaginationLink>
+                        </PaginationItem>
+                    }
+                }
+                <PaginationItem Disabled="@IsPageNavigationDisabled(NEXT)" @onclick="Next">
+                    <PaginationLink>
+                        <span aria-hidden="true">&raquo;</span>
+                    </PaginationLink>
+                </PaginationItem>
+            </Pagination>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    private const string PREVIOUS = "previous";
+    private const string NEXT = "next";
+    private string currentPage = "1";
+    private PagedResultDto<AuthorDto> filteredData = new PagedResultDto<AuthorDto>();
+    private PagedResultDto<AuthorDto> authorList = new PagedResultDto<AuthorDto>();
+    private int pageItems = 0;
+    private int itemsPerPage = 3;
+
+    protected override async Task OnInitializedAsync()
+    {
+      var  input=new GetAuthorListDto{MaxResultCount=itemsPerPage,SkipCount=pageItems} ;
+        authorList = await AuthorAppService.GetListAsync(input);
+        filteredData = authorList;
+        pageItems = (int)System.Math.Ceiling((decimal)filteredData.Items.Count / 10);
+    }
+
+    private async Task Search(ChangeEventArgs e)
+    {
+        string query = e.Value.ToString();
+        if (query.Length >= 3)
+        {
+            filteredData.Items = authorList.Items.Where(x => x.Name.ToLower().Contains(query.ToLower())).ToList();
+        }
+        else
+        {
+            filteredData = authorList;
+        }
+        currentPage = "1"; // reset the current page to the first page after search
+        pageItems = (int)Math.Ceiling((decimal)filteredData.Items.Count / 10); // update the number of pages
+    }
+    private async Task AdvancedSearch(ChangeEventArgs e)
+    {
+        string query = e.Value.ToString();
+        if (query.Length >= 3)
+        {
+            filteredData.Items = authorList.Items.Where(
+                x => x.Name.ToLower().Contains(query.ToLower()) || x.Id.ToString().Contains(query)
+            ).ToList();
+
+        }
+        else
+        {
+            filteredData = authorList;
+        }
+        currentPage = "1"; // reset the current page to the first page after search
+        pageItems = (int)Math.Ceiling((decimal)filteredData.Items.Count / 10); // update the number of pages
+    }
+    private bool IsActive(string page)
+        => currentPage == page;
+
+    private bool IsPageNavigationDisabled(string navigation)
+    {
+        if (navigation.Equals(PREVIOUS))
+        {
+            return currentPage.Equals("1");
+        }
+        else if (navigation.Equals(NEXT))
+        {
+            return currentPage.Equals(pageItems.ToString());
+        }
+        return false;
+    }
+    private void Previous()
+    {
+        var currentPageAsInt = int.Parse(currentPage);
+        if (currentPageAsInt > 1)
+        {
+            currentPage = (currentPageAsInt - 1).ToString();
+            filteredData.Items = authorList.Items.Skip((currentPageAsInt - 2) * 10).Take(10).ToList();
+        }
+    }
+    private void Next()
+    {
+        var currentPageAsInt = int.Parse(currentPage);
+        if (currentPageAsInt < pageItems)
+        {
+            currentPage = (currentPageAsInt + 1).ToString();
+            filteredData.Items = authorList.Items.Skip(currentPageAsInt * 10).Take(10).ToList();
+        }
+    }
+    private void SetActive(string page)
+    {
+        var currentPageAsInt = int.Parse(page);
+        currentPage = page;
+        filteredData.Items = authorList.Items.Skip((currentPageAsInt - 1) * 10).Take(10).ToList();
+    }
+    public class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+} 
