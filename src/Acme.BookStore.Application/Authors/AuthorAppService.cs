@@ -54,21 +54,7 @@ public class AuthorAppService : BookStoreAppService, IAuthorAppService
         return new PagedResultDto<AuthorDto>(
           totalCount,
            authorDtos
-      );
-        //var authors = await _authorRepository.GetListAsync(
-        //       input.SkipCount,
-        //       input.MaxResultCount,
-        //       input.Sorting,
-        //       input.Filter
-        //   );
-
-        //var totalCount = input.Filter == null
-        //     ? await _authorRepository.CountAsync()
-        //     : await _authorRepository.CountAsync(author => author.Name.Contains(input.Filter));
-        // return new PagedResultDto<AuthorDto>(
-        // totalCount,
-        //     ObjectMapper.Map<List<Author>, List<AuthorDto>>(authors)
-        //);
+      );  
     }
 
     [Authorize(BookStorePermissions.Authors.Create)]

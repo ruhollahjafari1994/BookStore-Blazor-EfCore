@@ -1,10 +1,7 @@
-﻿@page "/AuthorsList"
-
+﻿@page "/AuthorsList"    
 @using Acme.BookStore.Books;
 @using Blazorise
-@using Blazorise.DataGrid
-
-
+@using Blazorise.DataGrid        
 @using Acme.BookStore.Authors
 @using Acme.BookStore.Localization
 @using Volo.Abp.Application.Dtos;
@@ -12,7 +9,8 @@
 @inherits BookStoreComponentBase
 @inject IAuthorAppService AuthorAppService
 @inject AbpBlazorMessageLocalizerHelper<BookStoreResource> LH
-
+@using System.Reflection;
+ 
 
 <div class="container my-5">
     <div class="row mb-3">
@@ -36,9 +34,12 @@
     <div class="row">
         <div class="col-md-12">
             <DataGrid TItem="AuthorDto" Data="@filteredData.Items">
-                <DataGridColumn TItem="AuthorDto" Field="@nameof(AuthorDto.Name)" Caption="Name" />
-                <DataGridColumn TItem="AuthorDto" Field="@nameof(AuthorDto.Id)" Caption="ID" />
+                @foreach (PropertyInfo property in typeof(AuthorDto).GetProperties())
+                {
+                    <DataGridColumn TItem="AuthorDto" Field="@property.Name" Caption="@property.Name" />
+                }
             </DataGrid>
+
         </div>
     </div>
     <div class="row mt-3 justify-content-center">
@@ -72,14 +73,14 @@
 
 
 @code {
-
+    AuthorDto autorobj = new();
     private const string PREVIOUS = "previous";
     private const string NEXT = "next";
     private string currentPage = "1";
     private PagedResultDto<AuthorDto> filteredData = new PagedResultDto<AuthorDto>();
     private PagedResultDto<AuthorDto> authorList = new PagedResultDto<AuthorDto>();
     private int pageItems = 0;
-    private int itemsPerPage = 3;
+    private int itemsPerPage = 10;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,21 +90,22 @@
         pageItems = (int)System.Math.Ceiling((decimal)filteredData.Items.Count / 10);
     }
 
-    private async Task Search(ChangeEventArgs e)
+    private void Search(ChangeEventArgs e)
     {
         string query = e.Value.ToString();
         if (query.Length >= 3)
         {
-            filteredData.Items = authorList.Items.Where(x => x.Name.ToLower().Contains(query.ToLower())).ToList();
+            filteredData.Items = authorList.Items.Where
+            (x => x.Name.ToLower().Contains(query.ToLower())).ToList();
         }
         else
         {
             filteredData = authorList;
         }
-        currentPage = "1"; // reset the current page to the first page after search
-        pageItems = (int)Math.Ceiling((decimal)filteredData.Items.Count / 10); // update the number of pages
+        currentPage = "1";  
+        pageItems = (int)Math.Ceiling((decimal)filteredData.Items.Count / 10);  
     }
-    private async Task AdvancedSearch(ChangeEventArgs e)
+    private  void AdvancedSearch(ChangeEventArgs e)
     {
         string query = e.Value.ToString();
         if (query.Length >= 3)
@@ -158,10 +160,5 @@
         var currentPageAsInt = int.Parse(page);
         currentPage = page;
         filteredData.Items = authorList.Items.Skip((currentPageAsInt - 1) * 10).Take(10).ToList();
-    }
-    public class Person
-    {
-        public string Name { get; set; }
-        public int Age { get; set; }
-    }
+    }      
 } 
