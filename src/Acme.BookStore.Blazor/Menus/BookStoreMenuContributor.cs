@@ -59,9 +59,9 @@ public class BookStoreMenuContributor : IMenuContributor
         if (await context.IsGrantedAsync(BookStorePermissions.Authors.Default))
         {
             bookStoreMenu.AddItem(new ApplicationMenuItem(
-                "BooksStore.AuthorsList",
-                l["Menu:AuthorsList"],
-                url: "/AuthorsList"
+                "employee",
+                l["Menu:employee"],
+                url: "/employee"
             ));
         }
         
