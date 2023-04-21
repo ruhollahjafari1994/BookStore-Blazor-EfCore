@@ -54,8 +54,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Components\" />
-  </ItemGroup>
-
 </Project>
