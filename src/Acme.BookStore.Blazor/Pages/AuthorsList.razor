@@ -1,5 +1,5 @@
 ﻿@page "/AuthorsList"
-@inject IAuthorAppService AuthorAppService
+@inject IAuthorAppService _authorAppService
 @using Acme.BookStore.Authors;
 @using Acme.BookStore.Books;
 @using Blazorise
@@ -26,7 +26,7 @@
         {
             AuthorDto = new AuthorDto();
         }
-        protected override async Task OnInitializedAsync() => await GetAuthorListAsync();
+        protected  async Task OnInitializedAsync() => await GetAuthorListAsync();
 
 
         private async Task GetAuthorListAsync()
@@ -39,7 +39,7 @@
                 getAuthorListDto.Sorting = CurrentSorting;
                 getAuthorListDto.Filter = !string.IsNullOrEmpty(FilterValue) ? FilterValue : string.Empty;
                 getAuthorListDto.AuthorSearch = AuthorSearch;
-                var result = await AuthorAppService.GetPagedListAsync(getAuthorListDto);
+                var result = await _authorAppService.GetPagedListAsync(getAuthorListDto);
 
                 AuthorList = (List<AuthorDto>)result.Items;
                 TotalCount = (int)result.TotalCount;
