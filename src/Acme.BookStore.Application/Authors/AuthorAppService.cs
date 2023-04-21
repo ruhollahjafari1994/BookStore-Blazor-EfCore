@@ -10,6 +10,10 @@ using System.Linq;
 using static Acme.BookStore.Permissions.BookStorePermissions;
 using AutoMapper;
 using Acme.BookStore.Books;
+                
+using System.Linq.Dynamic.Core; 
+using Microsoft.EntityFrameworkCore;        
+ 
 
 namespace Acme.BookStore.Authors;
 
@@ -59,26 +63,44 @@ public class AuthorAppService : BookStoreAppService, IAuthorAppService
 
     public async Task<PagedResultDto<AuthorDto>> GetPagedListAsync(GetAuthorListDto input)
     {
+
+
         if (input.Sorting.IsNullOrWhiteSpace())
         {
             input.Sorting = nameof(Author.Name);
         }
-        var queryable = await _authorRepository.GetQueryableAsync();
-        var query = from author in queryable select new { author };
-        query = query.Skip(input.SkipCount).Take(input.MaxResultCount);
-        var queryResult = await AsyncExecuter.ToListAsync(query);
 
-        var authorDtos = queryResult.Select(x =>
+        var AuthorQueryable = await _authorRepository.GetQueryableAsync();
+
+        if (!string.IsNullOrEmpty(input.Filter))
+            AuthorQueryable = AuthorQueryable.Where(i => i.Name.ToLower().Contains(input.Filter.ToLower()) || i.Name.ToString() == input.Filter || i.ShortBio.ToLower().Contains(input.Filter.ToLower()));
+
+        if (input.AuthorSearch != null)
         {
-            var authorDto = ObjectMapper.Map<Author, AuthorDto>(x.author);
-            authorDto.Name = x.author.Name;
-            return authorDto;
-        }).ToList();
-        var totalCount = await _authorRepository.GetCountAsync();
+            if (!string.IsNullOrEmpty(input.AuthorSearch.Name))
+            {
+                AuthorQueryable = AuthorQueryable.Where(i => i.Name.ToLower().Contains(input.AuthorSearch.Name.ToLower()));
+            }
+
+            if (!string.IsNullOrEmpty(input.AuthorSearch.ShortBio))
+            {
+                AuthorQueryable = AuthorQueryable.Where(i => i.ShortBio.ToLower().Contains(input.AuthorSearch.ShortBio.ToLower()));
+            }
+        }
+
+
+        var result = await AuthorQueryable
+            .OrderBy(input.Sorting)
+            .Skip(input.SkipCount)
+            .Take(input.MaxResultCount)
+            .ToListAsync();
+
+        var totalCount = await AuthorQueryable.CountAsync();
+
         return new PagedResultDto<AuthorDto>(
-          totalCount,
-           authorDtos
-      );
+            totalCount,
+            ObjectMapper.Map<List<Author>, List<AuthorDto>>(result)
+        );
     }
 
     [Authorize(BookStorePermissions.Authors.Create)]
