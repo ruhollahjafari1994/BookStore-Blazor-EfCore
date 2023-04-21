@@ -74,14 +74,12 @@
 
 
 @code {
-
     private const string PREVIOUS = "previous";
     private const string NEXT = "next";
     private string currentPage = "1";
     private PagedResultDto<AuthorDto> filteredData = new PagedResultDto<AuthorDto>();
     private PagedResultDto<AuthorDto> authorList = new PagedResultDto<AuthorDto>();
     private int pageItems = 0;
-    private int itemsPerPage = 3;
 
     protected override async Task OnInitializedAsync()
     {
@@ -91,21 +89,16 @@
         pageItems = (int)System.Math.Ceiling((decimal)filteredData.Items.Count / 10);
     }
 
-    private async Task Search(ChangeEventArgs e)
     {
         string query = e.Value.ToString();
         if (query.Length >= 3)
         {
-            filteredData.Items = authorList.Items.Where(x => x.Name.ToLower().Contains(query.ToLower())).ToList();
         }
         else
         {
             filteredData = authorList;
         }
-        currentPage = "1"; // reset the current page to the first page after search
-        pageItems = (int)Math.Ceiling((decimal)filteredData.Items.Count / 10); // update the number of pages
     }
-    private async Task AdvancedSearch(ChangeEventArgs e)
     {
         string query = e.Value.ToString();
         if (query.Length >= 3)
