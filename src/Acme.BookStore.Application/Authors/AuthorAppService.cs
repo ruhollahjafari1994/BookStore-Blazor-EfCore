@@ -55,20 +55,30 @@ public class AuthorAppService : BookStoreAppService, IAuthorAppService
           totalCount,
            authorDtos
       );
-        //var authors = await _authorRepository.GetListAsync(
-        //       input.SkipCount,
-        //       input.MaxResultCount,
-        //       input.Sorting,
-        //       input.Filter
-        //   );
+    }
 
-        //var totalCount = input.Filter == null
-        //     ? await _authorRepository.CountAsync()
-        //     : await _authorRepository.CountAsync(author => author.Name.Contains(input.Filter));
-        // return new PagedResultDto<AuthorDto>(
-        // totalCount,
-        //     ObjectMapper.Map<List<Author>, List<AuthorDto>>(authors)
-        //);
+    public async Task<PagedResultDto<AuthorDto>> GetPagedListAsync(GetAuthorListDto input)
+    {
+        if (input.Sorting.IsNullOrWhiteSpace())
+        {
+            input.Sorting = nameof(Author.Name);
+        }
+        var queryable = await _authorRepository.GetQueryableAsync();
+        var query = from author in queryable select new { author };
+        query = query.Skip(input.SkipCount).Take(input.MaxResultCount);
+        var queryResult = await AsyncExecuter.ToListAsync(query);
+
+        var authorDtos = queryResult.Select(x =>
+        {
+            var authorDto = ObjectMapper.Map<Author, AuthorDto>(x.author);
+            authorDto.Name = x.author.Name;
+            return authorDto;
+        }).ToList();
+        var totalCount = await _authorRepository.GetCountAsync();
+        return new PagedResultDto<AuthorDto>(
+          totalCount,
+           authorDtos
+      );
     }
 
     [Authorize(BookStorePermissions.Authors.Create)]

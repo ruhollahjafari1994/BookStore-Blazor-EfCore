@@ -10,6 +10,7 @@ public interface IAuthorAppService : IApplicationService
     Task<AuthorDto> GetAsync(Guid id);
 
     Task<PagedResultDto<AuthorDto>> GetListAsync(GetAuthorListDto input);
+    Task<PagedResultDto<AuthorDto>> GetPagedListAsync(GetAuthorListDto input);
 
     Task<AuthorDto> CreateAsync(CreateAuthorDto input);
 
