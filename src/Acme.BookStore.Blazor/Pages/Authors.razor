@@ -106,6 +106,16 @@
                             </MemoEdit>
                         </Field>
                     </Validation>
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Sex"]</FieldLabel>
+                            <MemoEdit Rows="6" @bind-Text="@NewAuthor.Sex">
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </MemoEdit>
+                        </Field>
+                    </Validation>
                 </Validations>
             </ModalBody>
             <ModalFooter>

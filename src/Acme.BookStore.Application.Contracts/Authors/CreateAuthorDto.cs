@@ -14,4 +14,5 @@ public class CreateAuthorDto
     public DateTime BirthDate { get; set; }
 
     public string ShortBio { get; set; }
+    public String Sex { get; set; }
 }

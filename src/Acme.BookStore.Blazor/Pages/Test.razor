@@ -1,6 +1,8 @@
 ﻿@page "/test"
 @using Acme.BookStore.Authors;
+@using Acme.BookStore.Blazor.Helper;
 @using Blazorise
+@using Blazorise.Components
 @using Blazorise.DataGrid
 @inject IAuthorAppService _authorAppService
 
@@ -11,7 +13,7 @@
             <CardHeader>
                 <Row Class="justify-content-between">
                     <Column ColumnSize="ColumnSize.IsAuto">
-                        <h2>Author</h2>
+                        <h2>Authors</h2>
                     </Column>
                 </Row>
                 <Row>
@@ -55,7 +57,7 @@
                             <DisplayTemplate>
                                 <span>@((AuthorList.IndexOf(context) + 1).ToString())</span>
                             </DisplayTemplate>
-                        </DataGridColumn>  
+                        </DataGridColumn>
                         <DataGridColumn TItem="AuthorDto"
                                         Field="@nameof(AuthorDto.Name)"
                                         Caption="Name"
@@ -66,7 +68,65 @@
                                         Caption="ShortBio"
                                         Editable="false">
                         </DataGridColumn>
+                        <DataGridColumn TItem="AuthorDto"
+                                        Field="Sex"
+                                        Caption="Sex">
 
+                            <FilterTemplate>
+                                <SelectList SelectedValue="@SexStatus"
+                                            SelectedValueChanged="@(value => {SexStatus = value;context.TriggerFilterChange( SexStatus); })"
+                                            TItem="SexStatusEnum"
+                                            TValue="SexStatusEnum?"
+                                            DefaultItemDisabled="false"
+                                            Data="Enum.GetValues(typeof(SexStatusEnum)).OfType<SexStatusEnum>().Where(i=> i != SexStatusEnum.SelectAnOption)"
+                                            TextField="@((item)=>item.GetDisplayAttributeValues().Name)"
+                                            ValueField="@((item)=>item)"
+                                            DefaultItemText="" />
+                            </FilterTemplate>
+                        </DataGridColumn>
+                        <DataGridColumn TItem="AuthorDto"
+                                        Field="@nameof(AuthorDto.BirthDate)"
+                                        Caption="D.O.B">
+                            <DisplayTemplate>
+                                @{
+                                    var date = (context as AuthorDto)?.BirthDate;
+
+                                    if (date != null)
+                                    {
+                                        @($"{date.Value.ToString("MMM dd, yyyy")}")
+                                    }
+                                } 
+                            </DisplayTemplate>
+
+                            <FilterTemplate>
+                                <DateEdit 
+                                    TValue="DateTime?"
+                                    Date="BirthDate" 
+                                    DateChanged="@(value => { BirthDate = value; context.TriggerFilterChange( BirthDate ); })"
+                                     />
+                            </FilterTemplate>
+                         </DataGridColumn>
+                        <DataGridColumn TItem="AuthorDto"
+                                        Field="@nameof(AuthorDto.BirthDate)"
+                                        Caption="D.O.B"
+                                        
+                                        >
+                            <DisplayTemplate>
+                                @{
+                                    var date = (context as AuthorDto)?.BirthDate;
+
+                                    if (date != null)
+                                    {
+                                        @($"{date.Value.ToString("MMM dd, yyyy")}")  
+                                    }
+                                }
+
+                            </DisplayTemplate>
+
+                            <FilterTemplate>
+                                <DateEdit TValue="DateTime?" Date="BirthDate" DateChanged="@(value => { BirthDate = value; context.TriggerFilterChange( BirthDate ); })" />
+                            </FilterTemplate>
+                        </DataGridColumn>
                         <DataGridCommandColumn Field="Actions" Caption="Actions" Width="200px" NewCommandAllowed="false" TItem="AuthorDto">
                             <ClearFilterCommandTemplate>
                                 <Button Class="btn-outline-info" Clicked="@(()=>OnClearSearchButton(context))">

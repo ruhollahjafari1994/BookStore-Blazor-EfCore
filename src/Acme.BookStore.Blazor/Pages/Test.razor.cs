@@ -2,6 +2,7 @@
 using Blazorise;
 using Blazorise.DataGrid;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,10 @@ namespace Acme.BookStore.Blazor.Pages
 {
     public partial class Test
     {
+
+        public SexStatusEnum? SexStatus { get; set; }
+        public DateTime? BirthDate { get; set; }
+
         public bool AdvancedSearch { get; set; }
         public bool IsDataGridFilterable { get; set; } = false;
         private int? Sequence { get; set; }
@@ -57,14 +62,20 @@ namespace Acme.BookStore.Blazor.Pages
             {
                 var name = e.Columns.FirstOrDefault(i => i.Field == "Name" && i.SearchValue != null);
                 var shortBio = e.Columns.FirstOrDefault(i => i.Field == "ShortBio" && i.SearchValue != null);
-                if (shortBio is not null || name is not null )
+                var sex = e.Columns.FirstOrDefault(i => i.Field == "Sex" && i.SearchValue != null);
+                var birthDate = e.Columns.FirstOrDefault(i => i.Field == "BirthDate" && i.SearchValue != null);
+                if (shortBio is not null || name is not null || sex is not null || birthDate is not null)
                     AuthorSearch = new AuthorSearchDto();  
                 if (name != null)
                     AuthorSearch.Name = name.SearchValue.ToString();
                 if (shortBio != null)
                     AuthorSearch.ShortBio = shortBio.SearchValue.ToString();
-               
-                if ( name is null && shortBio is null )
+                if (sex != null && sex.SearchValue.ToString() !="All")
+                    AuthorSearch.Sex = sex.SearchValue.ToString();
+                if (birthDate != null )
+                    AuthorSearch.BirthDate = (DateTime)birthDate.SearchValue;
+
+                if ( name is null && shortBio is null && sex is null && birthDate is null)
                     AuthorSearch = null;
                 CurrentSorting = e.Columns
                     .Where(c => c.SortDirection != SortDirection.Default)

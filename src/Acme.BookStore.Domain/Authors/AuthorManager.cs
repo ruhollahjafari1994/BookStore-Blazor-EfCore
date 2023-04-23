@@ -18,7 +18,9 @@ public class AuthorManager : DomainService
     public async Task<Author> CreateAsync(
         [NotNull] string name,
         DateTime birthDate,
-        [CanBeNull] string shortBio = null)
+        string sex,
+        [CanBeNull] string shortBio = null
+        )
     {
         Check.NotNullOrWhiteSpace(name, nameof(name));
 
@@ -32,6 +34,7 @@ public class AuthorManager : DomainService
             GuidGenerator.Create(),
             name,
             birthDate,
+            sex,
             shortBio
         );
     }

@@ -86,6 +86,14 @@ public class AuthorAppService : BookStoreAppService, IAuthorAppService
             {
                 AuthorQueryable = AuthorQueryable.Where(i => i.ShortBio.ToLower().Contains(input.AuthorSearch.ShortBio.ToLower()));
             }
+            if (!string.IsNullOrEmpty(input.AuthorSearch.Sex))
+            {
+                AuthorQueryable = AuthorQueryable.Where(i => i.Sex.ToLower()==input.AuthorSearch.Sex.ToLower());
+            }
+            if (!string.IsNullOrEmpty(input.AuthorSearch.BirthDate.ToString()))
+            {
+                AuthorQueryable = AuthorQueryable.Where(i => i.BirthDate == input.AuthorSearch.BirthDate);
+            }
         }
 
 
@@ -109,7 +117,8 @@ public class AuthorAppService : BookStoreAppService, IAuthorAppService
         var author = await _authorManager.CreateAsync(
             input.Name,
             input.BirthDate,
-            input.ShortBio
+            input.Sex   ,
+            input.ShortBio 
         );
 
         await _authorRepository.InsertAsync(author);

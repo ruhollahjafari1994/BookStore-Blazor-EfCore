@@ -9,4 +9,5 @@ public class AuthorSearchDto
     public DateTime BirthDate { get; set; }
 
     public string ShortBio { get; set; }
+    public string Sex { get; set; }
 }
