@@ -84,7 +84,6 @@
                                             DefaultItemText="" />
                             </FilterTemplate>
                         </DataGridColumn>
-                        
                         <DataGridColumn TItem="AuthorDto"
                                         Field="@nameof(AuthorDto.BirthDate)"
                                         Caption="D.O.B">
@@ -96,7 +95,32 @@
                                     {
                                         @($"{date.Value.ToString("MMM dd, yyyy")}")
                                     }
+                                } 
+                            </DisplayTemplate>
+
+                            <FilterTemplate>
+                                <DateEdit 
+                                    TValue="DateTime?"
+                                    Date="BirthDate" 
+                                    DateChanged="@(value => { BirthDate = value; context.TriggerFilterChange( BirthDate ); })"
+                                     />
+                            </FilterTemplate>
+                         </DataGridColumn>
+                        <DataGridColumn TItem="AuthorDto"
+                                        Field="@nameof(AuthorDto.BirthDate)"
+                                        Caption="D.O.B"
+                                        
+                                        >
+                            <DisplayTemplate>
+                                @{
+                                    var date = (context as AuthorDto)?.BirthDate;
+
+                                    if (date != null)
+                                    {
+                                        @($"{date.Value.ToString("MMM dd, yyyy")}")  
+                                    }
                                 }
+
                             </DisplayTemplate>
 
                             <FilterTemplate>
