@@ -110,6 +110,7 @@ namespace Acme.BookStore.Blazor.Pages
                 AuthorSearch = null;
                 await GetAuthorsAsync();
             }
+
         }
     }
 }
