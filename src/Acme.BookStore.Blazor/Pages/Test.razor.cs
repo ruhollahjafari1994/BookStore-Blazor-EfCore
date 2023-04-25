@@ -1,4 +1,5 @@
 ﻿using Acme.BookStore.Authors;
+using Acme.BookStore.Books;
 using Blazorise;
 using Blazorise.DataGrid;
 using Microsoft.AspNetCore.Components.Web;
@@ -14,23 +15,24 @@ namespace Acme.BookStore.Blazor.Pages
     {
 
         public SexStatusEnum? SexStatus { get; set; }
+        public List<String> SearchBookList { get; set; }
         public DateTime? BirthDate { get; set; }
 
         public bool AdvancedSearch { get; set; }
         public bool IsDataGridFilterable { get; set; } = false;
         private int? Sequence { get; set; }
         private string FilterValue { get; set; }
-        private AuthorDto selectedAuthorDto;
+        private BookDto selectedBookDto;
         private AuthorSearchDto AuthorSearch { get; set; } = new AuthorSearchDto();
-        private List<AuthorDto> AuthorList { get; set; }
+        private List<BookDto> AuthorBookList { get; set; }
         private int PageSize { get; set; } = 10;
         private int CurrentPage { get; set; }
         private string CurrentSorting { get; set; }
         private int TotalCount { get; set; }
-        private AuthorDto AuthorDto { get; set; }
+        private BookDto BookDto { get; set; }
         public Test()
         {
-            AuthorDto = new AuthorDto();
+            BookDto = new BookDto();
         }
         protected override async Task OnInitializedAsync()
         {
@@ -40,14 +42,14 @@ namespace Acme.BookStore.Blazor.Pages
         {
             try
             {
-                GetAuthorListDto getAuthorListDto = new GetAuthorListDto();
-                getAuthorListDto.MaxResultCount = PageSize;
-                getAuthorListDto.SkipCount = CurrentPage * PageSize;
-                getAuthorListDto.Sorting = CurrentSorting;
-                getAuthorListDto.Filter = !string.IsNullOrEmpty(FilterValue) ? FilterValue : string.Empty;
-                getAuthorListDto.AuthorSearch = AuthorSearch;
-                var result = await _authorAppService.GetPagedListAsync(getAuthorListDto);
-                AuthorList = (List<AuthorDto>)result.Items;
+                GetAuthorListDto dto = new GetAuthorListDto();
+                dto.MaxResultCount = PageSize;
+                dto.SkipCount = CurrentPage * PageSize;
+                dto.Sorting = CurrentSorting;
+                dto.Filter = !string.IsNullOrEmpty(FilterValue) ? FilterValue : string.Empty;
+                dto.AuthorSearch = AuthorSearch;
+                var result = await _bookAppService.GetAuthorsbookListAsync(dto);
+                AuthorBookList = (List<BookDto>)result.Items;
                 TotalCount = (int)result.TotalCount;
             }
             catch (Exception ex)
@@ -56,26 +58,31 @@ namespace Acme.BookStore.Blazor.Pages
             }
         }
 
-        private async Task OnDataGridReadAsync(DataGridReadDataEventArgs<AuthorDto> e)
+        private async Task OnDataGridReadAsync(DataGridReadDataEventArgs<BookDto> e)
         {
             try
             {
-                var name = e.Columns.FirstOrDefault(i => i.Field == "Name" && i.SearchValue != null);
+                var authorName = e.Columns.FirstOrDefault(i => i.Field == "AuthorName" && i.SearchValue != null);
+                var bookName = e.Columns.FirstOrDefault(i => i.Field == "Name" && i.SearchValue != null);
                 var shortBio = e.Columns.FirstOrDefault(i => i.Field == "ShortBio" && i.SearchValue != null);
                 var sex = e.Columns.FirstOrDefault(i => i.Field == "Sex" && i.SearchValue != null);
-                var birthDate = e.Columns.FirstOrDefault(i => i.Field == "BirthDate" && i.SearchValue != null);
-                if (shortBio is not null || name is not null || sex is not null || birthDate is not null)
+                var birthDate = e.Columns.FirstOrDefault(i => i.Field == "Birthdate" && i.SearchValue != null);
+                var price = e.Columns.FirstOrDefault(i => i.Field == "Price" && i.SearchValue != null);
+                if (shortBio is not null || authorName is not null || sex is not null || birthDate is not null || price is not null)
                     AuthorSearch = new AuthorSearchDto();  
-                if (name != null)
-                    AuthorSearch.Name = name.SearchValue.ToString();
-                if (shortBio != null)
-                    AuthorSearch.ShortBio = shortBio.SearchValue.ToString();
+                if (authorName != null)
+                    AuthorSearch.AuthorName = authorName.SearchValue.ToString();
+                
                 if (sex != null && sex.SearchValue.ToString() !="All")
                     AuthorSearch.Sex = sex.SearchValue.ToString();
-                if (birthDate != null )
-                    AuthorSearch.BirthDate = (DateTime)birthDate.SearchValue;
+                //if (birthDate != null )
+                //    AuthorSearch.Birthdate = (DateTime)birthDate.SearchValue;
+                if (bookName != null)
+                    AuthorSearch.BookName = bookName.SearchValue.ToString();
+                if (price != null)
+                    AuthorSearch.Price = Single.TryParse(price.SearchValue.ToString(), out float value) ? value : 0.0f;
 
-                if ( name is null && shortBio is null && sex is null && birthDate is null)
+                if (authorName is null &&  sex is null && birthDate is null && bookName is null && price is null)
                     AuthorSearch = null;
                 CurrentSorting = e.Columns
                     .Where(c => c.SortDirection != SortDirection.Default)
@@ -92,7 +99,7 @@ namespace Acme.BookStore.Blazor.Pages
             }
         }
         private async Task OnTableSearchButton(KeyboardEventArgs e) => await GetAuthorsAsync();
-        private async Task OnClearSearchButton(CommandContext<AuthorDto> context)
+        private async Task OnClearSearchButton(CommandContext<BookDto> context)
         {
             Sequence = null;
             FilterValue = null;
@@ -109,6 +116,7 @@ namespace Acme.BookStore.Blazor.Pages
                 IsDataGridFilterable = true;
                 AuthorSearch = null;
                 await GetAuthorsAsync();
+                SearchBookList= await _bookAppService.GetBookList();
             }
         }
     }

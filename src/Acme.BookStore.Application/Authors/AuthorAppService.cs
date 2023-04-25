@@ -21,14 +21,17 @@ namespace Acme.BookStore.Authors;
 public class AuthorAppService : BookStoreAppService, IAuthorAppService
 {
     private readonly IAuthorRepository _authorRepository;
+    private readonly IBookAppService  _bookAppService;
     private readonly AuthorManager _authorManager;
 
     public AuthorAppService(
         IAuthorRepository authorRepository,
-        AuthorManager authorManager)
+        AuthorManager authorManager,
+        IBookAppService bookAppService)
     {
         _authorRepository = authorRepository;
         _authorManager = authorManager;
+        _bookAppService = bookAppService;
     }
 
     public async Task<AuthorDto> GetAsync(Guid id)
@@ -72,27 +75,25 @@ public class AuthorAppService : BookStoreAppService, IAuthorAppService
 
         var AuthorQueryable = await _authorRepository.GetQueryableAsync();
 
+       
+
         if (!string.IsNullOrEmpty(input.Filter))
             AuthorQueryable = AuthorQueryable.Where(i => i.Name.ToLower().Contains(input.Filter.ToLower()) || i.Name.ToString() == input.Filter || i.ShortBio.ToLower().Contains(input.Filter.ToLower()));
 
         if (input.AuthorSearch != null)
         {
-            if (!string.IsNullOrEmpty(input.AuthorSearch.Name))
+            if (!string.IsNullOrEmpty(input.AuthorSearch.AuthorName))
             {
-                AuthorQueryable = AuthorQueryable.Where(i => i.Name.ToLower().Contains(input.AuthorSearch.Name.ToLower()));
+                AuthorQueryable = AuthorQueryable.Where(i => i.Name.ToLower().Contains(input.AuthorSearch.AuthorName.ToLower()));
             }
-
-            if (!string.IsNullOrEmpty(input.AuthorSearch.ShortBio))
-            {
-                AuthorQueryable = AuthorQueryable.Where(i => i.ShortBio.ToLower().Contains(input.AuthorSearch.ShortBio.ToLower()));
-            }
+           
             if (!string.IsNullOrEmpty(input.AuthorSearch.Sex))
             {
                 AuthorQueryable = AuthorQueryable.Where(i => i.Sex.ToLower()==input.AuthorSearch.Sex.ToLower());
             }
-            if (!string.IsNullOrEmpty(input.AuthorSearch.BirthDate.ToString()))
+            if (!string.IsNullOrEmpty(input.AuthorSearch.Birthdate.ToString()))
             {
-                AuthorQueryable = AuthorQueryable.Where(i => i.BirthDate == input.AuthorSearch.BirthDate);
+                AuthorQueryable = AuthorQueryable.Where(i => i.BirthDate == input.AuthorSearch.Birthdate);
             }
         }
 

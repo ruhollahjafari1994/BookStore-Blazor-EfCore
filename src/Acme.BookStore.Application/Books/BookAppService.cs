@@ -68,7 +68,8 @@ public class BookAppService :
 
         //Prepare a query to join books and authors
         var query = from book in queryable
-                    join author in await _authorRepository.GetQueryableAsync() on book.AuthorId equals author.Id
+                    join author in await _authorRepository.GetQueryableAsync()
+                    on book.AuthorId equals author.Id
                     select new { book, author };
 
         //Paging
@@ -85,6 +86,8 @@ public class BookAppService :
         {
             var bookDto = ObjectMapper.Map<Book, BookDto>(x.book);
             bookDto.AuthorName = x.author.Name;
+            bookDto.Birthdate = x.author.BirthDate;
+            bookDto.Sex = x.author.Sex;
             return bookDto;
         }).ToList();
 
@@ -96,7 +99,91 @@ public class BookAppService :
             bookDtos
         );
     }
+    public async Task<PagedResultDto<BookDto>> GetAuthorsbookListAsync(GetAuthorListDto input)
+    {
+        //Get the IQueryable<Book> from the repository
+        var queryable = await Repository.GetQueryableAsync();
 
+        //Prepare a query to join books and authors
+        var query = from book in queryable
+                    join author in await _authorRepository.GetQueryableAsync()
+                    on book.AuthorId equals author.Id
+                    select new { book, author };
+
+        if (input.Sorting.IsNullOrWhiteSpace())
+        {
+            input.Sorting = nameof(Author.Name);
+        }
+
+        if (!string.IsNullOrEmpty(input.Filter))
+            query = query.Where(i => i.author.Name.ToLower().Contains(input.Filter.ToLower()) || i.author.Sex.ToString() == input.Filter || i.book.Price.ToString() == input.Filter || i.book.Name.ToString() == input.Filter || i.author.BirthDate.ToString() == input.Filter);
+
+        if (input.AuthorSearch != null)
+        {
+            if (!string.IsNullOrEmpty(input.AuthorSearch.AuthorName))
+            {
+                query = query.Where(i => i.author.Name.ToLower().Contains(input.AuthorSearch.AuthorName.ToLower()));
+            }
+
+            if (!string.IsNullOrEmpty(input.AuthorSearch.Sex))
+            {
+                query = query.Where(i => i.author.Sex.ToLower() == input.AuthorSearch.Sex.ToLower());
+            }
+            if (input.AuthorSearch != null && input.AuthorSearch.Birthdate != null && input.AuthorSearch.Birthdate != DateTime.MinValue)
+            {
+                query = query.Where(i => i.author.BirthDate == input.AuthorSearch.Birthdate);
+            }
+
+
+            if (!string.IsNullOrEmpty(input.AuthorSearch.BookName))
+            {
+                query = query.Where(i => i.book.Name.ToLower().Contains(input.AuthorSearch.BookName.ToLower()));
+            }
+            if (input.AuthorSearch?.Price != 0)
+            {
+                query = query.Where(i => i.book.Price == input.AuthorSearch.Price);
+            }
+        }
+        var total = query;
+
+        //Paging
+        query = query
+            .OrderBy(NormalizeSorting(input.Sorting))
+            .Skip(input.SkipCount)
+            .Take(input.MaxResultCount);
+
+        //Execute the query and get a list
+        var queryResult = await AsyncExecuter.ToListAsync(query);
+
+        //Convert the query result to a list of BookDto objects
+        var bookDtos = queryResult.Select(x =>
+        {
+            var bookDto = ObjectMapper.Map<Book, BookDto>(x.book);
+            bookDto.AuthorName = x.author.Name;
+            bookDto.Sex = x.author.Sex;
+            bookDto.Birthdate = x.author.BirthDate;
+            return bookDto;
+        }).ToList();
+
+        var totalCount = total.Count();
+        //Get the total count with another query
+
+        return new PagedResultDto<BookDto>(
+            totalCount,
+            bookDtos
+        );
+    }
+    public async Task<List<string>> GetBookList()
+    {
+        var queryable = await Repository.GetQueryableAsync();
+
+        //Prepare a query to join books and authors
+        var query = from book in queryable
+                    select book.Name;
+        var queryResult = await AsyncExecuter.ToListAsync(query);
+        return queryResult;
+
+    }
     public async Task<ListResultDto<AuthorLookupDto>> GetAuthorLookupAsync()
     {
         var authors = await _authorRepository.GetListAsync();

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Acme.BookStore.Authors;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -14,4 +16,7 @@ public interface IBookAppService :
 {
     // ADD the NEW METHOD
     Task<ListResultDto<AuthorLookupDto>> GetAuthorLookupAsync();
-}
+    Task<PagedResultDto<BookDto>> GetAuthorsbookListAsync(GetAuthorListDto input);
+    Task<List<string>> GetBookList();
+
+ }
