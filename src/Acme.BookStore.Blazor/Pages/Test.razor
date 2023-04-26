@@ -69,8 +69,20 @@
                                         Field="@nameof(BookDto.Name)"
                                         Caption="Book Name"
                                         Editable="false">
-
+                            <FilterTemplate>
+                                <SelectList SelectedValue="@SelectedSearchOption"
+                                            SelectedValueChanged="@((value) => { SelectedSearchOption = value; context.TriggerFilterChange(SelectedSearchOption); })"
+                                            TItem="string"
+                                            TValue="string"
+                                            DefaultItemDisabled="false"
+                                            Data="@SearchBookList"
+                                            TextField="@((item) => item)"
+                                            ValueField="@((item) => item)"
+                                            DefaultItemText="Select an option" />
+                            </FilterTemplate>
                         </DataGridColumn>
+
+
                         <DataGridColumn TItem="BookDto"
                                         Field="@nameof(BookDto.Price)"
                                         Caption="Price"
@@ -79,6 +91,7 @@
                         <DataGridColumn TItem="BookDto"
                                         Field="Sex"
                                         Caption="Sex">
+                            
 
                             <FilterTemplate>
                                 <SelectList SelectedValue="@SexStatus"

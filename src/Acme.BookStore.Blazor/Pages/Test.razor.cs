@@ -13,9 +13,10 @@ namespace Acme.BookStore.Blazor.Pages
 {
     public partial class Test
     {
-
-        public SexStatusEnum? SexStatus { get; set; }
-        public List<String> SearchBookList { get; set; }
+        private string SelectedSearchOption;
+     
+    public SexStatusEnum? SexStatus { get; set; }
+       public List<String> SearchBookList { get; set; }
         public DateTime? BirthDate { get; set; }
 
         public bool AdvancedSearch { get; set; }
@@ -64,11 +65,10 @@ namespace Acme.BookStore.Blazor.Pages
             {
                 var authorName = e.Columns.FirstOrDefault(i => i.Field == "AuthorName" && i.SearchValue != null);
                 var bookName = e.Columns.FirstOrDefault(i => i.Field == "Name" && i.SearchValue != null);
-                var shortBio = e.Columns.FirstOrDefault(i => i.Field == "ShortBio" && i.SearchValue != null);
                 var sex = e.Columns.FirstOrDefault(i => i.Field == "Sex" && i.SearchValue != null);
                 var birthDate = e.Columns.FirstOrDefault(i => i.Field == "Birthdate" && i.SearchValue != null);
                 var price = e.Columns.FirstOrDefault(i => i.Field == "Price" && i.SearchValue != null);
-                if (shortBio is not null || authorName is not null || sex is not null || birthDate is not null || price is not null)
+                if (bookName is not null || authorName is not null || sex is not null || birthDate is not null || price is not null)
                     AuthorSearch = new AuthorSearchDto();  
                 if (authorName != null)
                     AuthorSearch.AuthorName = authorName.SearchValue.ToString();
