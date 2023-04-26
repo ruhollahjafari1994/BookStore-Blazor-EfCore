@@ -14,11 +14,9 @@ namespace Acme.BookStore.Blazor.Pages
     public partial class Test
     {
         private string SelectedSearchOption;
-     
-    public SexStatusEnum? SexStatus { get; set; }
-       public List<String> SearchBookList { get; set; }
+        public List<String> SearchBookList { get; set; }
+        public SexStatusEnum? SexStatus { get; set; }
         public DateTime? BirthDate { get; set; }
-
         public bool AdvancedSearch { get; set; }
         public bool IsDataGridFilterable { get; set; } = false;
         private int? Sequence { get; set; }
@@ -69,11 +67,11 @@ namespace Acme.BookStore.Blazor.Pages
                 var birthDate = e.Columns.FirstOrDefault(i => i.Field == "Birthdate" && i.SearchValue != null);
                 var price = e.Columns.FirstOrDefault(i => i.Field == "Price" && i.SearchValue != null);
                 if (bookName is not null || authorName is not null || sex is not null || birthDate is not null || price is not null)
-                    AuthorSearch = new AuthorSearchDto();  
+                    AuthorSearch = new AuthorSearchDto();
                 if (authorName != null)
                     AuthorSearch.AuthorName = authorName.SearchValue.ToString();
-                
-                if (sex != null && sex.SearchValue.ToString() !="All")
+
+                if (sex != null && sex.SearchValue.ToString() != "All")
                     AuthorSearch.Sex = sex.SearchValue.ToString();
                 //if (birthDate != null )
                 //    AuthorSearch.Birthdate = (DateTime)birthDate.SearchValue;
@@ -82,7 +80,7 @@ namespace Acme.BookStore.Blazor.Pages
                 if (price != null)
                     AuthorSearch.Price = Single.TryParse(price.SearchValue.ToString(), out float value) ? value : 0.0f;
 
-                if (authorName is null &&  sex is null && birthDate is null && bookName is null && price is null)
+                if (authorName is null && sex is null && birthDate is null && bookName is null && price is null)
                     AuthorSearch = null;
                 CurrentSorting = e.Columns
                     .Where(c => c.SortDirection != SortDirection.Default)
@@ -116,7 +114,7 @@ namespace Acme.BookStore.Blazor.Pages
                 IsDataGridFilterable = true;
                 AuthorSearch = null;
                 await GetAuthorsAsync();
-                SearchBookList= await _bookAppService.GetBookList();
+                SearchBookList = await _bookAppService.GetBookList();
             }
         }
     }
