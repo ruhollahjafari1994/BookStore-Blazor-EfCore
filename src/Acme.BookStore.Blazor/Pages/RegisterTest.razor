@@ -1,5 +1,71 @@
 ﻿@page "/RegisterTest"
-    
+@using Acme.BookStore.Authors;
+@inject IAuthorAppService _authorAppService
+
+ 
+    <Content>     
+        <TabPanel Name="register">
+            <Card>   
+                <CardBody>
+                <CardTitle>
+                    New Author
+                </CardTitle>
+                    <Validations @ref="@registerValidationsRef" Mode="ValidationMode.Manual" ValidateOnLoad="false">
+                        <Validation Validator="ValidationRule.IsNotEmpty">
+                            <Field>
+                                <FieldLabel>Full Name</FieldLabel>
+                                <TextEdit @bind-Text="@name" Placeholder="Enter Your Full Name" />
+                            </Field>
+                        </Validation>
+                        <Validation Validator="ValidationRule.IsEmail">
+                            <Field>
+                                <FieldLabel>Email</FieldLabel>
+                                <TextEdit @bind-Text="@email" Placeholder="Enter Your Email">
+                                    <Feedback>
+                                        <ValidationNone>Please Enter your email.</ValidationNone>
+                                        <ValidationSuccess>Email is valid</ValidationSuccess>
+                                        <ValidationError>Enter Valid email </ValidationError>
+                                    </Feedback>
+                                </TextEdit>
+                            </Field>
+                        </Validation>
+                        <Validation Validator="ValidationRule.IsNotEmpty">
+                            <Field>
+                                <FieldLabel>Password</FieldLabel>
+                                <TextEdit @bind-Text="@password" Placeholder="Enter Password" />
+                                <FieldHelp>Password Strength: <Text TextColor="TextColor.Danger">Strong</Text></FieldHelp>
+                            </Field>
+                        </Validation>
+                    </Validations>
+                </CardBody>
+                <CardBody>
+                    <Button Color="Color.Primary" Clicked="@OnRegisterClicked">
+                        Create Account
+                    </Button>
+                </CardBody>
+            </Card>
+        </TabPanel>
+    </Content>
 
 
-      
+
+@code {
+    Validations registerValidationsRef;  
+    string name;
+    string email;
+    string password;
+    bool rememberMe;  
+    async Task OnRegisterClicked()
+    {
+        if (await registerValidationsRef.ValidateAll())
+        {
+            var _fullName = name;
+            var _emailAddress = email;
+            var _password = password;
+            var _rememberMe = rememberMe;
+            var newAuthor = new CreateAuthorDto();
+            await _authorAppService.CreateAsync(newAuthor);
+            await registerValidationsRef.ClearAll();
+        }
+    }
+}
